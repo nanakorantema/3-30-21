@@ -10,7 +10,144 @@ library(rstanarm)
 library(primer.data)
 ```
 
+```{r fit model}
+#left hand side variable, two on the right 
+
+glimpse(trains)
+#att_end
+#treatment
+#att_start
+
+trains_2 <- trains %>% 
+  select(att_end, treatment, party, att_start) 
+#att_end is the key variable that we want to change 
+#treatment is the only thing that changes the attitude (knob, on the right hand side)
+#att_start or party are both reasonable variables to have added to the right
+
+fit_att_start <- stan_glm(att_end ~ treatment + att_start,
+                  data = trains_2,
+                  refresh = 0)
+
+
+```
+  #### 2020-03-30
+* Question this week: For the Massachusetts Senate race in 2024, the Republican candidate needs to make voters more conservative about immigration. How many does she need to expose to Spanish-speakers to produce at least 10,000 voters with 12 or higher attitude scores?
+
+Data set chains
+- not many people have an att_end of above 12
+- Data restricted to commuters in 2012 does not reflect a 2024 reality - 
+- Experiment occurred in Massachusetts which is relevant, but only within Boston (but was randomly selected)
+- There may be more eligible voters 
+- Our ideal preceptor table would have data for every eligible voter in Massachusetts for 2024
+
+Justice: 
+
+
+$y_{i} = \beta_0 + \beta_1 x_{1,i} + \beta_2 x_2 +\epsilon_{i}$ 
+
+
+
+$att\_end_{i} = \beta_0 + \beta_1 treatment + \beta_2 att\_start +\epsilon_{i}$ 
+
+the above is our **data generating mechanism**, or DGM
+
+causal or predictive model
+
+causal- change in att-end/ potential outcomes
+
+The explanatory variables are treatment, which says whether a commuter relieved treatment or control conditions, and att_start, which measures attitude at the start of the study.
+
+treatment effect of -.9/1
+people become more conservative when confronted by Spanish speakers 
+
+
+intercept: is beta 0, but we don't know the true intercept, but we can get the posterior distribution of this-- these are estimates
+the posterior for this value has a median of 2.3/ 9.7(when averaged), and .2 is the spread of the posterior - variability +/- 2 SD gives us the 95% confidence interval
+treatmentControl = beta 1
+att_start = att_start
+
+RE-READ 6.3- standard error vs. Standard deviation 
+
+```{r}
+fit_party <- stan_glm(data = trains,
+                  formula = att_end ~ treatment + party,
+                  refresh = 0,
+                  seed = 5)
+
+print(fit_2)
+
+#Intercept 
+# att_end as a function of treatment and party, party republican shows that for every republican faces a 2.1 increase (median posterior), MD_SD is another way of discussing standard error- confidence intervals--> in this case -/+ 1.4 is the 95% confidence interval
+
+# categorical variable treatment control and variable (party) 
+#if you are party republican your att-end is 2.4 higher than if you were a democrat
+```
+
+```{r}
+ fit_income <- stan_glm(data = trains,
+                  formula = att_end ~ treatment + income,
+                  refresh = 0,
+                  seed = 5)
+```
+
+```{r}
+ fit_ideology_start <- stan_glm(data = trains,
+                  formula = att_end ~ treatment + ideology_start,
+                  refresh = 0,
+                  seed = 5)
+
+
+```
+
 ```{r}
 
+#The higher our value for elpd_loo, the better our model performs- loo= leave
+#one out. It fits the model to a potential data set
+
+#elpd is the score you should focus on--> higher is always better 
+
+loo_att_start <- loo(fit_att_start)
+loo_party <- loo(fit_party)
+loo_income <- loo(fit_income)
+loo_ideologystart <- loo(fit_ideology_start)
+
+loo_1
+loo_2
+loo_3
+loo_4
+loo_compare(loo_att_start, loo_party, loo_income, loo_ideologystart)
+
+#The value for elpd_diff is equal to the difference in elpd_loo between the
+#models. These_diff shows that the difference in standard error. 
+
+#fit_c_att_start is the best fit since it has smallest SE usually shows how
+#accurate a specific number/estimate is so in the elpd_loo the SE refers to the
+#confidence of the Estimate
+
+#standard error of the difference - helps us decide how much confidence we
+#should have about a particular model being the best elpd_diff on it's own is
+#useless, understanding the SE_diff helps you confidently make a claim about
+#what could potentially be a better model- 2 SDs for a meaningful error
+```
+  
+  #mathematical formula
+$att\_end_{i} = \beta_0 + \beta_1 treatment + \beta_2 party +\epsilon_{i}$ 
+
+```{r}
+#after deciding that fit_c_att_start is the best, lets begin modeling- 1
+
+newobs <- tibble(treatment = rep("Treated", 1000), att_start = 9)
+
+
+
+
+pp <- posterior_predict(fit_att_start, newdata = newobs) %>% 
+  as_tibble() %>% 
+  mutate_all(as.numeric) %>% 
+  rowwise() %>% 
+  mutate(twelves = sum(c_across() >= 12)) %>% 
+  select(twelves)
+
+mean(pp$twelves)
 ```
 

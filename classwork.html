@@ -168,7 +168,66 @@ pre code {
 </div>
 
 
+<pre class="r"><code>#left hand side variable, two on the right 
 
+glimpse(trains)</code></pre>
+<pre><code>## Rows: 115
+## Columns: 14
+## $ treatment      &lt;fct&gt; Treated, Treated, Treated, Treated, Control, Treated, C…
+## $ att_start      &lt;dbl&gt; 11, 9, 3, 11, 8, 13, 13, 10, 12, 9, 10, 11, 13, 6, 8, 1…
+## $ att_end        &lt;dbl&gt; 11, 10, 5, 11, 5, 13, 13, 11, 12, 10, 9, 9, 13, 7, 8, 1…
+## $ gender         &lt;chr&gt; &quot;Female&quot;, &quot;Female&quot;, &quot;Male&quot;, &quot;Male&quot;, &quot;Male&quot;, &quot;Female&quot;, &quot;…
+## $ race           &lt;chr&gt; &quot;White&quot;, &quot;White&quot;, &quot;White&quot;, &quot;White&quot;, &quot;White&quot;, &quot;White&quot;, &quot;…
+## $ liberal        &lt;lgl&gt; FALSE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE, FALSE, F…
+## $ party          &lt;chr&gt; &quot;Democrat&quot;, &quot;Republican&quot;, &quot;Democrat&quot;, &quot;Democrat&quot;, &quot;Demo…
+## $ age            &lt;int&gt; 31, 34, 63, 45, 55, 37, 53, 36, 54, 42, 33, 50, 24, 40,…
+## $ income         &lt;dbl&gt; 135000, 105000, 135000, 300000, 135000, 87500, 87500, 1…
+## $ line           &lt;chr&gt; &quot;Framingham&quot;, &quot;Framingham&quot;, &quot;Framingham&quot;, &quot;Framingham&quot;,…
+## $ station        &lt;chr&gt; &quot;Grafton&quot;, &quot;Southborough&quot;, &quot;Grafton&quot;, &quot;Grafton&quot;, &quot;Graft…
+## $ hisp_perc      &lt;dbl&gt; 0.0264, 0.0154, 0.0191, 0.0191, 0.0191, 0.0231, 0.0304,…
+## $ ideology_start &lt;int&gt; 3, 4, 1, 4, 2, 5, 5, 4, 4, 4, 3, 5, 4, 1, 2, 2, 3, 4, 2…
+## $ ideology_end   &lt;int&gt; 3, 4, 2, 4, 2, 5, 5, 4, 3, 4, 3, 4, 4, 1, 2, 3, 3, 1, 2…</code></pre>
+<pre class="r"><code>#att_end
+#treatment
+#att_start
+
+trains_2 &lt;- trains %&gt;% 
+  select(att_end, treatment, party, att_start) 
+#att_end is the key variable that we want to change 
+#treatment is the only thing that changes the attitude (knob, on the right hand side)
+#att_start or party are both reasonable variables to have added to the right
+
+fit_1 &lt;- stan_glm(att_end ~ treatment + att_start,
+                  data = trains,
+                  refresh = 0,
+                  seed = 77)
+print(fit_1)</code></pre>
+<pre><code>## stan_glm
+##  family:       gaussian [identity]
+##  formula:      att_end ~ treatment + att_start
+##  observations: 115
+##  predictors:   3
+## ------
+##                  Median MAD_SD
+## (Intercept)       2.3    0.4  
+## treatmentControl -1.0    0.3  
+## att_start         0.8    0.0  
+## 
+## Auxiliary parameter(s):
+##       Median MAD_SD
+## sigma 1.3    0.1   
+## 
+## ------
+## * For help interpreting the printed output see ?print.stanreg
+## * For info on the priors used see ?prior_summary.stanreg</code></pre>
+<p>#### 2020-03-30 * Question this week: For the Massachusetts Senate race in 2024, the Republican candidate needs to make voters more conservative about immigration. How many does she need to expose to Spanish-speakers to produce at least 10,000 voters with 12 or higher attitude scores?</p>
+<p>Data set chains - not many people have an att_end of above 12 - Data restricted to commuters in 2012 does not reflect a 2024 reality - - Experiment occurred in Massachusetts which is relevant, but only within Boston (but was randomly selected) - There may be more eligible voters - Our ideal preceptor table would have data for every eligible voter in Massachusetts for 2024</p>
+<p>Justice:</p>
+<p><span class="math inline">\(y_{i} = \beta_0 + \beta_1 x_{1,i} + \beta_2 x_2 +\epsilon_{i}\)</span></p>
+<p><span class="math inline">\(att\_end_{i} = \beta_0 + \beta_1 treatment + \beta_2 att\_start +\epsilon_{i}\)</span></p>
+<p>causal or predictive model</p>
+<p>causal- change in att-end/ potential outcomes</p>
+<p>The explanatory variables are treatment, which says whether a commuter relieved treatment or control conditions, and att_start, which measures attitude at the start of the study.</p>
 
 
 
